@@ -1,0 +1,933 @@
+[
+ {
+  "c": "Nền tảng",
+  "q": "Dự báo doanh số là gì?",
+  "k": [
+   "dự báo doanh số là gì",
+   "sales forecasting",
+   "khái niệm dự báo",
+   "dự báo bán hàng"
+  ],
+  "a": "Là ước lượng doanh số tương lai (theo sản phẩm, cửa hàng, khu vực, thời gian) dựa trên dữ liệu lịch sử, các yếu tố tác động và phán đoán chuyên môn. Kết quả làm đầu vào cho kế hoạch sản xuất, mua hàng, tồn kho, nhân sự và ngân sách."
+ },
+ {
+  "c": "Nền tảng",
+  "q": "Dự báo khác gì mục tiêu bán hàng (target, quota)?",
+  "k": [
+   "mục tiêu bán hàng",
+   "target",
+   "quota",
+   "khác nhau dự báo và mục tiêu",
+   "chỉ tiêu"
+  ],
+  "a": "Dự báo là điều nhiều khả năng sẽ xảy ra; mục tiêu là điều doanh nghiệp muốn đạt. Nếu trộn lẫn, dự báo bị méo (lạc quan để khớp chỉ tiêu hoặc giấu bớt để dễ vượt). Hãy tách hai con số và theo dõi khoảng cách giữa chúng."
+ },
+ {
+  "c": "Nền tảng",
+  "q": "Các nhóm phương pháp dự báo chính là gì?",
+  "k": [
+   "phân loại phương pháp dự báo",
+   "các phương pháp dự báo",
+   "định tính định lượng",
+   "nhóm phương pháp"
+  ],
+  "a": "Có 4 nhóm: (1) định tính (Delphi, ý kiến chuyên gia, lực lượng bán hàng, khảo sát); (2) chuỗi thời gian (trung bình trượt, làm mịn mũ, ARIMA); (3) nhân quả/hồi quy (dùng giá, khuyến mãi, thu nhập, thời tiết); (4) học máy (cây tăng cường, mạng nơ-ron). Thực tế thường kết hợp nhiều nhóm."
+ },
+ {
+  "c": "Phương pháp & lựa chọn",
+  "q": "Khi nào dùng phương pháp định tính?",
+  "k": [
+   "phương pháp định tính",
+   "delphi",
+   "ý kiến chuyên gia",
+   "sản phẩm mới ít dữ liệu",
+   "lực lượng bán hàng"
+  ],
+  "a": "Dùng khi thiếu dữ liệu lịch sử (sản phẩm mới, thị trường mới) hoặc có thay đổi cấu trúc (luật mới, đối thủ mới). Delphi lấy ý kiến chuyên gia ẩn danh qua nhiều vòng cho đến khi hội tụ, giảm ảnh hưởng của người có quyền lực. Nhược điểm là dễ thiên lệch, nên cần đối chiếu với số liệu."
+ },
+ {
+  "c": "Phương pháp & lựa chọn",
+  "q": "Chọn phương pháp dự báo theo tình huống như thế nào?",
+  "k": [
+   "chọn phương pháp",
+   "phương pháp nào phù hợp",
+   "nên dùng mô hình nào",
+   "lựa chọn mô hình"
+  ],
+  "a": "Ít dữ liệu hoặc sản phẩm mới: định tính/tương tự. Chuỗi ổn định, ngắn hạn: làm mịn mũ hoặc ETS. Có mùa vụ rõ: Holt-Winters, SARIMA. Có biến ngoại sinh (khuyến mãi, giá, lễ): hồi quy động hoặc học máy. Rất nhiều chuỗi chạy tự động: cây tăng cường với đặc trưng trễ. Luôn so với baseline đơn giản và chọn bằng kiểm định ngoài mẫu."
+ },
+ {
+  "c": "Phương pháp & lựa chọn",
+  "q": "Tầm dự báo (horizon) ngắn, trung, dài hạn khác nhau thế nào?",
+  "k": [
+   "tầm dự báo",
+   "horizon",
+   "ngắn hạn trung hạn dài hạn",
+   "dự báo dài hạn"
+  ],
+  "a": "Ngắn hạn (ngày-tuần) phục vụ tồn kho, nhân sự, bổ sung hàng; trung hạn (tháng-quý) phục vụ S&OP, mua hàng; dài hạn (năm) phục vụ ngân sách, công suất, đầu tư. Horizon càng dài thì sai số càng lớn, khoảng dự báo càng rộng. Horizon tối thiểu nên bằng lead time cộng chu kỳ đặt hàng."
+ },
+ {
+  "c": "Phương pháp & lựa chọn",
+  "q": "Dự báo theo mức chi tiết nào (SKU, nhóm hàng, toàn quốc)?",
+  "k": [
+   "mức chi tiết",
+   "granularity",
+   "tổng hợp dự báo",
+   "sku cửa hàng",
+   "pooling"
+  ],
+  "a": "Dữ liệu càng chi tiết (SKU × cửa hàng × ngày) càng nhiều nhiễu và nhiều số 0, sai số tương đối cao. Dữ liệu tổng hợp ổn định hơn nên sai số tương đối thấp hơn. Nên dự báo ở mức phù hợp với quyết định cần đưa ra, và dùng dự báo phân cấp để các mức khớp nhau."
+ },
+ {
+  "c": "Nền tảng",
+  "q": "Cần chuẩn bị dữ liệu gì trước khi dự báo?",
+  "k": [
+   "chuẩn bị dữ liệu",
+   "làm sạch dữ liệu",
+   "dữ liệu thiếu",
+   "outlier",
+   "tiền xử lý",
+   "data cleaning"
+  ],
+  "a": "Kiểm tra trùng lặp, đơn vị đo, ngày thiếu, giá trị âm; phân biệt «không bán» với «không có dữ liệu»; xử lý ngoại lệ (đánh dấu, thay bằng giá trị hợp lý thay vì xóa); ghi nhận sự kiện (khuyến mãi, lễ, hết hàng). Sau đó mới chia train/validation/test theo thời gian."
+ },
+ {
+  "c": "Nền tảng",
+  "q": "Dự báo điểm, dự báo khoảng và dự báo xác suất khác nhau thế nào?",
+  "k": [
+   "dự báo điểm",
+   "dự báo khoảng",
+   "dự báo xác suất",
+   "probabilistic",
+   "prediction interval"
+  ],
+  "a": "Dự báo điểm cho một giá trị (kỳ vọng hoặc trung vị). Dự báo khoảng cho vùng chứa giá trị thực với xác suất định trước (ví dụ 80%, 95%). Dự báo xác suất cho cả phân phối. Quyết định tồn kho cần phân phối hoặc khoảng, vì chi phí thiếu hàng và dư hàng không đối xứng."
+ },
+ {
+  "c": "Chuỗi thời gian",
+  "q": "Chuỗi thời gian gồm những thành phần nào?",
+  "k": [
+   "thành phần chuỗi thời gian",
+   "xu hướng mùa vụ",
+   "trend seasonality",
+   "chu kỳ",
+   "nhiễu"
+  ],
+  "a": "Gồm xu hướng (trend, thay đổi dài hạn), mùa vụ (seasonality, lặp lại theo chu kỳ cố định như tuần, tháng, năm), chu kỳ (cycle, dao động kinh tế không cố định độ dài) và phần dư/nhiễu. Nhận diện các thành phần này giúp chọn đúng mô hình."
+ },
+ {
+  "c": "Chuỗi thời gian",
+  "q": "Mô hình phân rã cộng tính và nhân tính khác nhau thế nào?",
+  "k": [
+   "cộng tính",
+   "nhân tính",
+   "additive",
+   "multiplicative",
+   "phân rã"
+  ],
+  "a": "Cộng tính: Y = Xu hướng + Mùa vụ + Phần dư, dùng khi biên độ mùa vụ không đổi theo mức doanh số. Nhân tính: Y = Xu hướng × Mùa vụ × Phần dư, dùng khi biên độ mùa vụ tăng theo mức doanh số (phổ biến trong bán lẻ). Lấy log chuyển nhân tính thành cộng tính."
+ },
+ {
+  "c": "Chuỗi thời gian",
+  "q": "Phân rã STL là gì?",
+  "k": [
+   "stl",
+   "phân rã stl",
+   "loess",
+   "decomposition"
+  ],
+  "a": "STL (Seasonal-Trend decomposition using LOESS) tách chuỗi thành xu hướng, mùa vụ, phần dư bằng hồi quy cục bộ. Ưu điểm: xử lý được mọi chu kỳ, mùa vụ có thể thay đổi chậm theo thời gian, bền với ngoại lệ. Dùng để quan sát và để khử mùa vụ trước khi mô hình hóa."
+ },
+ {
+  "c": "Chuỗi thời gian",
+  "q": "Chỉ số mùa vụ (seasonal index) tính thế nào?",
+  "k": [
+   "chỉ số mùa vụ",
+   "seasonal index",
+   "hệ số mùa vụ",
+   "khử mùa vụ"
+  ],
+  "a": "Với mô hình nhân tính: chỉ số mùa của kỳ i = trung bình các lần xuất hiện của kỳ i chia cho trung bình chung (đã khử xu hướng), rồi chuẩn hóa để trung bình các chỉ số bằng 1. Dự báo = mức nền × chỉ số mùa. Chỉ số 1,2 nghĩa là kỳ đó cao hơn mức nền 20%."
+ },
+ {
+  "c": "Chuỗi thời gian",
+  "q": "Tính dừng (stationarity) là gì và kiểm định thế nào?",
+  "k": [
+   "tính dừng",
+   "stationary",
+   "adf",
+   "kpss",
+   "sai phân",
+   "differencing"
+  ],
+  "a": "Chuỗi dừng có trung bình, phương sai và cấu trúc tự tương quan không đổi theo thời gian. Kiểm định ADF có giả thuyết H0 là có nghiệm đơn vị (không dừng); KPSS có H0 là dừng, nên hai kiểm định bổ sung nhau. Chuỗi không dừng thường được sai phân (d) hoặc lấy log trước khi dùng ARIMA."
+ },
+ {
+  "c": "Chuỗi thời gian",
+  "q": "ACF và PACF dùng để làm gì?",
+  "k": [
+   "acf",
+   "pacf",
+   "tự tương quan",
+   "autocorrelation",
+   "correlogram"
+  ],
+  "a": "ACF đo tương quan giữa chuỗi và chính nó ở độ trễ k; PACF đo tương quan riêng sau khi loại ảnh hưởng của các độ trễ ngắn hơn. Quy tắc nhận diện: AR(p) có PACF cắt sau độ trễ p, còn ACF giảm dần; MA(q) có ACF cắt sau độ trễ q, còn PACF giảm dần. ACF có đỉnh lặp ở độ trễ 7 hoặc 12 cho thấy mùa vụ."
+ },
+ {
+  "c": "Chuỗi thời gian",
+  "q": "Xử lý mùa vụ nhiều chu kỳ (tuần và năm) thế nào?",
+  "k": [
+   "mùa vụ nhiều chu kỳ",
+   "multiple seasonality",
+   "fourier",
+   "tbats",
+   "mùa vụ tuần"
+  ],
+  "a": "Dữ liệu ngày thường có mùa vụ tuần (7) và năm (365,25). Cách làm: thêm biến giả thứ trong tuần và các cặp sin/cos Fourier cho chu kỳ năm; dùng TBATS; hoặc dùng học máy với đặc trưng lịch (thứ, ngày trong tháng, tháng, tuần trong năm)."
+ },
+ {
+  "c": "Chuỗi thời gian",
+  "q": "Khi nào dùng biến đổi log, Box-Cox hoặc log1p?",
+  "k": [
+   "biến đổi log",
+   "box-cox",
+   "log1p",
+   "ổn định phương sai",
+   "logarit"
+  ],
+  "a": "Dùng khi biên độ dao động tăng theo mức doanh số (phương sai không ổn định). Log ổn định phương sai và biến mô hình nhân tính thành cộng tính. Dữ liệu có số 0 dùng log(1+y), sau đó đổi ngược bằng exp(·)−1. Box-Cox là họ biến đổi tổng quát với tham số λ."
+ },
+ {
+  "c": "Làm mịn & ARIMA",
+  "q": "Các mô hình baseline (naive, seasonal naive, trung bình trượt) dùng để làm gì?",
+  "k": [
+   "baseline",
+   "naive",
+   "seasonal naive",
+   "mô hình cơ sở",
+   "trung bình trượt",
+   "drift"
+  ],
+  "a": "Naive lấy giá trị kỳ gần nhất; seasonal naive lấy giá trị cùng kỳ của chu kỳ trước (ví dụ cùng thứ tuần trước); drift cộng thêm xu hướng trung bình. Đây là thước đo tối thiểu: mô hình phức tạp mà không thắng baseline thì không đáng triển khai. Dùng để tính MASE và FVA."
+ },
+ {
+  "c": "Làm mịn & ARIMA",
+  "q": "Trung bình trượt giản đơn và có trọng số khác nhau thế nào?",
+  "k": [
+   "trung bình trượt",
+   "moving average",
+   "trung bình động",
+   "weighted moving average",
+   "ma"
+  ],
+  "a": "Trung bình trượt giản đơn lấy trung bình n kỳ gần nhất, mọi kỳ cùng trọng số. Bản có trọng số cho kỳ mới nhiều trọng số hơn. n lớn thì mượt nhưng chậm phản ứng. Phương pháp này không xử lý được xu hướng và mùa vụ, nên chỉ hợp với chuỗi ổn định."
+ },
+ {
+  "c": "Làm mịn & ARIMA",
+  "q": "Làm mịn mũ đơn (SES) là gì và chọn α thế nào?",
+  "k": [
+   "làm mịn mũ",
+   "ses",
+   "exponential smoothing",
+   "alpha",
+   "hệ số làm mịn"
+  ],
+  "a": "F(t+1) = α·A(t) + (1−α)·F(t), với 0<α≤1. α lớn phản ứng nhanh với thay đổi nhưng nhạy nhiễu; α nhỏ mượt nhưng chậm. α được chọn bằng cách tối thiểu hóa tổng bình phương sai số trên dữ liệu lịch sử. SES chỉ hợp với chuỗi không có xu hướng và mùa vụ."
+ },
+ {
+  "c": "Làm mịn & ARIMA",
+  "q": "Holt (xu hướng) và damped trend là gì?",
+  "k": [
+   "holt",
+   "xu hướng tuyến tính",
+   "damped trend",
+   "làm mịn kép",
+   "trend damped"
+  ],
+  "a": "Holt thêm thành phần xu hướng vào SES với hai tham số làm mịn (α cho mức, β cho xu hướng). Damped trend thêm hệ số suy giảm φ<1 để xu hướng yếu dần theo horizon, tránh dự báo tăng mãi. Damped thường chính xác hơn trong thực tế."
+ },
+ {
+  "c": "Làm mịn & ARIMA",
+  "q": "Holt-Winters là gì?",
+  "k": [
+   "holt-winters",
+   "holt winters",
+   "làm mịn ba lần",
+   "winters"
+  ],
+  "a": "Mở rộng Holt thêm thành phần mùa vụ (tham số γ, chu kỳ m). Có hai dạng: cộng tính (biên độ mùa vụ không đổi) và nhân tính (biên độ tỷ lệ với mức). Cần ít nhất hai chu kỳ mùa vụ đầy đủ để ước lượng."
+ },
+ {
+  "c": "Làm mịn & ARIMA",
+  "q": "Khung ETS là gì?",
+  "k": [
+   "ets",
+   "error trend seasonal",
+   "state space",
+   "khung ets"
+  ],
+  "a": "ETS mô tả các mô hình làm mịn mũ bằng ba thành phần Sai số (Error), Xu hướng (Trend), Mùa vụ (Seasonal), mỗi thành phần có thể là Không, Cộng hoặc Nhân. Tham số được ước lượng bằng hợp lý cực đại, chọn mô hình bằng AIC, và cho phép tính khoảng dự báo."
+ },
+ {
+  "c": "Làm mịn & ARIMA",
+  "q": "ARIMA/SARIMA là gì và quy trình Box-Jenkins gồm bước nào?",
+  "k": [
+   "arima",
+   "sarima",
+   "box-jenkins",
+   "box jenkins",
+   "tự hồi quy trung bình trượt"
+  ],
+  "a": "ARIMA(p,d,q): p bậc tự hồi quy, d số lần sai phân, q bậc trung bình trượt của sai số; SARIMA thêm phần mùa vụ. Quy trình Box-Jenkins: (1) nhận diện (làm dừng, xem ACF/PACF), (2) ước lượng tham số, (3) chẩn đoán phần dư, (4) dự báo."
+ },
+ {
+  "c": "Làm mịn & ARIMA",
+  "q": "Chọn bậc p, q cho ARIMA thế nào?",
+  "k": [
+   "chọn p q",
+   "bậc arima",
+   "aic",
+   "bic",
+   "auto arima",
+   "tiêu chí thông tin"
+  ],
+  "a": "Dùng ACF/PACF để gợi ý ban đầu, rồi so sánh các ứng viên bằng AIC hoặc BIC (nhỏ hơn là tốt hơn; BIC phạt phức tạp mạnh hơn). Chỉ so sánh AIC giữa các mô hình có cùng số lần sai phân. auto.arima tìm kiếm tự động. Cuối cùng vẫn nên kiểm tra bằng sai số ngoài mẫu."
+ },
+ {
+  "c": "Làm mịn & ARIMA",
+  "q": "Kiểm tra phần dư mô hình bằng gì? (Ljung-Box)",
+  "k": [
+   "phần dư",
+   "residual",
+   "ljung-box",
+   "nhiễu trắng",
+   "white noise",
+   "chẩn đoán mô hình"
+  ],
+  "a": "Phần dư tốt phải giống nhiễu trắng: trung bình gần 0, phương sai ổn định, không tự tương quan. Kiểm định Ljung-Box có H0 là phần dư không tự tương quan (p-value nhỏ nghĩa là mô hình còn bỏ sót cấu trúc). Nên xem thêm biểu đồ phần dư, ACF phần dư và độ chuẩn."
+ },
+ {
+  "c": "Làm mịn & ARIMA",
+  "q": "Prophet là gì?",
+  "k": [
+   "prophet",
+   "facebook prophet",
+   "mô hình cộng tính ngày lễ"
+  ],
+  "a": "Prophet là mô hình hồi quy cộng tính gồm xu hướng (có điểm thay đổi), mùa vụ (Fourier) và hiệu ứng ngày lễ do người dùng khai báo. Dễ dùng, chịu được dữ liệu thiếu và ngoại lệ. Nhưng không phải lúc nào cũng thắng ETS/ARIMA hay boosting, nên vẫn cần kiểm định ngoài mẫu."
+ },
+ {
+  "c": "Hồi quy & học máy",
+  "q": "Hồi quy tuyến tính trong dự báo doanh số: giả định và R² là gì?",
+  "k": [
+   "hồi quy tuyến tính",
+   "regression",
+   "r bình phương",
+   "r2",
+   "adjusted r2",
+   "giả định hồi quy"
+  ],
+  "a": "Mô hình Y = b0 + b1·X1 + … + e. Giả định chính: quan hệ tuyến tính, sai số có trung bình 0, phương sai không đổi, độc lập và gần chuẩn. R² là tỷ lệ phương sai Y được giải thích; R² hiệu chỉnh phạt khi thêm biến vô ích. R² cao trong mẫu không đảm bảo dự báo tốt ngoài mẫu."
+ },
+ {
+  "c": "Hồi quy & học máy",
+  "q": "Đa cộng tuyến (VIF) và Durbin-Watson là gì?",
+  "k": [
+   "đa cộng tuyến",
+   "vif",
+   "durbin-watson",
+   "multicollinearity",
+   "tự tương quan phần dư"
+  ],
+  "a": "Đa cộng tuyến là các biến độc lập tương quan mạnh với nhau, làm hệ số kém ổn định; VIF lớn hơn khoảng 5-10 là dấu hiệu cần xử lý. Durbin-Watson kiểm tra tự tương quan bậc 1 của phần dư (gần 2 là tốt, xa 2 là có tự tương quan), rất hay gặp khi hồi quy trên chuỗi thời gian."
+ },
+ {
+  "c": "Hồi quy & học máy",
+  "q": "Hồi quy động/ARIMAX với biến ngoại sinh là gì?",
+  "k": [
+   "arimax",
+   "hồi quy động",
+   "biến ngoại sinh",
+   "exogenous",
+   "dynamic regression",
+   "sarimax"
+  ],
+  "a": "Kết hợp cấu trúc chuỗi thời gian (ARIMA cho phần dư) với biến giải thích bên ngoài như giá, khuyến mãi, ngày lễ, thời tiết. Điều kiện: phải biết hoặc dự báo được giá trị tương lai của biến ngoại sinh (khuyến mãi đã lên kế hoạch thì dùng được)."
+ },
+ {
+  "c": "Hồi quy & học máy",
+  "q": "Tương quan có nghĩa là nhân quả không?",
+  "k": [
+   "tương quan nhân quả",
+   "correlation causation",
+   "hệ số tương quan",
+   "tương quan giả"
+  ],
+  "a": "Không. Hệ số tương quan r chỉ đo mức đồng biến tuyến tính (−1 đến 1). Hai chuỗi cùng có xu hướng có thể tương quan «giả» mà không liên quan. Muốn dùng một biến để dự báo, cần có cơ chế hợp lý, giá trị tương lai biết trước, và cải thiện sai số ngoài mẫu."
+ },
+ {
+  "c": "Hồi quy & học máy",
+  "q": "Học máy (gradient boosting) dự báo doanh số hoạt động thế nào?",
+  "k": [
+   "gradient boosting",
+   "xgboost",
+   "lightgbm",
+   "học máy",
+   "machine learning",
+   "đặc trưng trễ",
+   "lag features"
+  ],
+  "a": "Biến bài toán chuỗi thời gian thành bảng: mỗi dòng là một (chuỗi, ngày dự báo), cột là đặc trưng như doanh số trung bình các kỳ trước, cùng thứ tuần trước, khuyến mãi, ngày lễ, thông tin cửa hàng. Mô hình học quan hệ phi tuyến và tương tác, dùng chung cho nhiều chuỗi. Cần kiểm định theo thời gian và tránh rò rỉ dữ liệu."
+ },
+ {
+  "c": "Hồi quy & học máy",
+  "q": "Dự báo nhiều bước: recursive, direct, MIMO khác nhau thế nào?",
+  "k": [
+   "dự báo nhiều bước",
+   "recursive",
+   "direct",
+   "mimo",
+   "multi-step",
+   "đệ quy"
+  ],
+  "a": "Recursive: dự báo 1 bước rồi đưa kết quả làm đầu vào cho bước kế, sai số tích lũy. Direct: huấn luyện mô hình riêng (hoặc có đặc trưng horizon) cho từng bước, tránh tích lũy sai số. MIMO: một mô hình xuất ra cả vector các bước. Dự án này dùng direct."
+ },
+ {
+  "c": "Hồi quy & học máy",
+  "q": "Rò rỉ dữ liệu (data leakage) là gì?",
+  "k": [
+   "rò rỉ dữ liệu",
+   "data leakage",
+   "leakage",
+   "nhìn trước tương lai"
+  ],
+  "a": "Là khi thông tin chỉ có sau thời điểm dự báo lọt vào đặc trưng hoặc huấn luyện, làm kết quả kiểm định đẹp giả. Ví dụ: xáo trộn ngẫu nhiên train/test, dùng giao dịch hoặc doanh số của ngày cần dự báo, chuẩn hóa bằng thống kê của cả tập. Cách tránh: chia theo thời gian, chỉ dùng đặc trưng biết được tại thời điểm cắt."
+ },
+ {
+  "c": "Hồi quy & học máy",
+  "q": "Quá khớp (overfitting) là gì và tránh thế nào?",
+  "k": [
+   "overfitting",
+   "quá khớp",
+   "regularization",
+   "chính quy hóa",
+   "mô hình quá phức tạp",
+   "parsimony"
+  ],
+  "a": "Mô hình ghi nhớ nhiễu của dữ liệu huấn luyện nên sai số ngoài mẫu cao. Dấu hiệu: sai số train thấp nhưng validation cao. Cách tránh: mô hình đơn giản hơn, chính quy hóa, giới hạn độ sâu cây, dừng sớm, nhiều dữ liệu hơn, kiểm định theo thời gian."
+ },
+ {
+  "c": "Hồi quy & học máy",
+  "q": "Kết hợp nhiều mô hình dự báo (ensemble) có lợi gì?",
+  "k": [
+   "kết hợp dự báo",
+   "ensemble",
+   "forecast combination",
+   "trung bình mô hình",
+   "kết hợp mô hình"
+  ],
+  "a": "Trung bình nhiều dự báo từ các phương pháp khác nhau thường chính xác và ổn định hơn từng mô hình riêng, vì sai số của chúng không hoàn toàn trùng nhau. Đây là một trong những kết luận bền vững nhất của nghiên cứu dự báo; trung bình đơn giản đã rất khó đánh bại."
+ },
+ {
+  "c": "Hồi quy & học máy",
+  "q": "Cuộc thi M4 và M5 cho thấy điều gì?",
+  "k": [
+   "m4",
+   "m5",
+   "cuộc thi dự báo",
+   "makridakis",
+   "competition"
+  ],
+  "a": "Các cuộc thi Makridakis cho thấy: phương pháp kết hợp và lai thống kê-học máy thắng các mô hình đơn lẻ; mô hình phức tạp không tự động tốt hơn; ở M5 (doanh số bán lẻ Walmart) các giải cao dựa nhiều vào gradient boosting kết hợp đặc trưng lịch, giá, khuyến mãi."
+ },
+ {
+  "c": "Hồi quy & học máy",
+  "q": "Khi nào nên dùng deep learning (LSTM, N-BEATS, TFT)?",
+  "k": [
+   "deep learning",
+   "lstm",
+   "n-beats",
+   "tft",
+   "mạng nơ-ron",
+   "học sâu"
+  ],
+  "a": "Khi có rất nhiều chuỗi liên quan, dữ liệu dài, nhiều biến ngoại sinh và đủ nguồn lực huấn luyện. Với ít chuỗi hoặc dữ liệu ngắn, ETS/ARIMA hoặc boosting thường tốt hơn, rẻ hơn, dễ giải thích hơn. Dù dùng mô hình nào cũng phải thắng baseline trong kiểm định ngoài mẫu."
+ },
+ {
+  "c": "Đo sai số",
+  "q": "Sai số dự báo và MAE được tính thế nào?",
+  "k": [
+   "sai số dự báo",
+   "forecast error",
+   "mae",
+   "sai số tuyệt đối trung bình",
+   "mad"
+  ],
+  "a": "Sai số e(t) = A(t) − F(t) (thực tế trừ dự báo). MAE = trung bình của |e|, cùng đơn vị với doanh số, dễ hiểu nhưng không so sánh được giữa các sản phẩm có quy mô khác nhau."
+ },
+ {
+  "c": "Đo sai số",
+  "q": "MAPE là gì và có nhược điểm gì?",
+  "k": [
+   "mape",
+   "sai số phần trăm tuyệt đối",
+   "phần trăm sai số"
+  ],
+  "a": "MAPE = (100/n)·Σ|A−F|/|A|. Dễ hiểu nhưng không xác định khi A=0, bị thổi phồng khi A nhỏ, và bất đối xứng: phạt dự báo cao hơn thực tế nặng hơn dự báo thấp (sai số dự báo thấp tối đa 100%), nên khuyến khích dự báo thấp. Với dữ liệu có nhiều số 0 nên dùng WAPE hoặc MASE."
+ },
+ {
+  "c": "Đo sai số",
+  "q": "sMAPE là gì?",
+  "k": [
+   "smape",
+   "mape đối xứng",
+   "symmetric mape"
+  ],
+  "a": "sMAPE = (100/n)·Σ 2|A−F| / (|A|+|F|). Được đề xuất để giảm bất đối xứng của MAPE nhưng vẫn không hoàn toàn đối xứng và vẫn có vấn đề khi A và F đều gần 0, nên nhiều chuyên gia không khuyến nghị dùng làm thước đo chính."
+ },
+ {
+  "c": "Đo sai số",
+  "q": "WAPE là gì?",
+  "k": [
+   "wape",
+   "sai số phần trăm có trọng số",
+   "wmape"
+  ],
+  "a": "WAPE = Σ|A−F| / ΣA. Là tổng sai số tuyệt đối chia tổng doanh số, nên chuỗi doanh số lớn có trọng số lớn và không bị chia cho số 0 của từng kỳ. Rất phổ biến trong bán lẻ khi có nhiều chuỗi bán thưa."
+ },
+ {
+  "c": "Đo sai số",
+  "q": "RMSE khác MAE thế nào?",
+  "k": [
+   "rmse",
+   "sai số bình phương trung bình",
+   "mse",
+   "căn bậc hai sai số"
+  ],
+  "a": "RMSE = √(trung bình e²). Bình phương làm sai số lớn bị phạt nặng hơn, nên nhạy với ngoại lệ; MAE xử lý mọi sai số tuyến tính. Tối ưu RMSE hướng đến dự báo giá trị trung bình, tối ưu MAE hướng đến trung vị."
+ },
+ {
+  "c": "Đo sai số",
+  "q": "RMSLE là gì và vì sao dùng log1p?",
+  "k": [
+   "rmsle",
+   "log1p",
+   "sai số logarit",
+   "root mean squared logarithmic error"
+  ],
+  "a": "RMSLE = √(trung bình (ln(1+F) − ln(1+A))²). Đo sai số tương đối nên chuỗi lớn và nhỏ được đối xử công bằng, chịu được số 0 nhờ +1, và phạt dự báo thấp nặng hơn dự báo cao cùng mức chênh tuyệt đối. Huấn luyện trên log1p(doanh số) với bình phương tối thiểu chính là tối ưu RMSLE."
+ },
+ {
+  "c": "Đo sai số",
+  "q": "MASE là gì?",
+  "k": [
+   "mase",
+   "mean absolute scaled error",
+   "sai số chuẩn hóa"
+  ],
+  "a": "MASE = MAE của mô hình chia MAE của dự báo naive (hoặc seasonal naive) trên dữ liệu huấn luyện. MASE<1 nghĩa là tốt hơn baseline. Không bị chia cho 0, so sánh được giữa các chuỗi khác quy mô, nên được khuyến nghị làm thước đo chung."
+ },
+ {
+  "c": "Đo sai số",
+  "q": "Bias và tracking signal dùng để làm gì?",
+  "k": [
+   "bias",
+   "thiên lệch",
+   "tracking signal",
+   "tín hiệu theo dõi",
+   "sai lệch hệ thống"
+  ],
+  "a": "Bias = ΣF−ΣA chia ΣA: dương là dự báo cao hơn thực tế (dư tồn), âm là dự báo thấp (thiếu hàng). Tracking signal = tổng sai số tích lũy / MAD; vượt khoảng ±4 (có nơi dùng ±6) cho thấy mô hình lệch có hệ thống và cần xem lại."
+ },
+ {
+  "c": "Đo sai số",
+  "q": "Nên chọn thước đo sai số nào?",
+  "k": [
+   "chọn thước đo",
+   "nên dùng mape hay rmse",
+   "chỉ số đánh giá",
+   "metric nào",
+   "so sánh thước đo"
+  ],
+  "a": "Chọn theo quyết định kinh doanh: so sánh nhiều chuỗi khác quy mô dùng WAPE hoặc MASE; có nhiều số 0 tránh MAPE; muốn phạt ngoại lệ dùng RMSE; cuộc thi hoặc dữ liệu lệch phải dùng RMSLE. Nên báo cáo vài thước đo cùng bias, và luôn kèm so sánh với baseline."
+ },
+ {
+  "c": "Đo sai số",
+  "q": "MAPE bao nhiêu là tốt?",
+  "k": [
+   "mape bao nhiêu là tốt",
+   "mức sai số chấp nhận",
+   "chuẩn sai số",
+   "benchmark mape",
+   "sai số bao nhiêu thì tốt"
+  ],
+  "a": "Không có ngưỡng chung. Sai số phụ thuộc mức chi tiết (SKU-ngày rất cao, tổng toàn quốc thấp), tính biến động và horizon. Cách đánh giá đúng là so với baseline naive/seasonal naive của cùng dữ liệu và xem sai số có đủ nhỏ cho quyết định hay không (ví dụ chi phí tồn kho giảm bao nhiêu)."
+ },
+ {
+  "c": "Đo sai số",
+  "q": "Đánh giá khoảng dự báo bằng gì? (coverage, pinball loss)",
+  "k": [
+   "coverage",
+   "độ phủ khoảng",
+   "pinball",
+   "quantile loss",
+   "đánh giá khoảng dự báo"
+  ],
+  "a": "Độ phủ (coverage) là tỷ lệ giá trị thực nằm trong khoảng, nên gần mức danh nghĩa (khoảng 80% phải phủ khoảng 80%). Pinball loss đánh giá từng phân vị dự báo; khoảng càng hẹp càng tốt miễn là phủ đúng. Khoảng quá hẹp mà phủ thấp là quá tự tin."
+ },
+ {
+  "c": "Kiểm định mô hình",
+  "q": "Chia train/validation/test cho chuỗi thời gian thế nào?",
+  "k": [
+   "train validation test",
+   "chia dữ liệu",
+   "tập kiểm định",
+   "hold-out",
+   "chia tập dữ liệu"
+  ],
+  "a": "Phải chia theo thời gian: train là quá khứ, validation/test là giai đoạn sau, tuyệt đối không xáo trộn ngẫu nhiên. Tập kiểm định nên dài ít nhất bằng horizon cần dự báo và nên chứa các kiểu ngày điển hình (cuối tuần, lễ). Sau khi chọn mô hình, huấn luyện lại với toàn bộ dữ liệu để dự báo thật."
+ },
+ {
+  "c": "Kiểm định mô hình",
+  "q": "Backtesting rolling-origin (cross-validation chuỗi thời gian) là gì?",
+  "k": [
+   "backtesting",
+   "rolling origin",
+   "cross validation",
+   "kiểm định chéo",
+   "walk-forward",
+   "time series cv"
+  ],
+  "a": "Lặp lại nhiều lần: chọn một mốc cắt, huấn luyện đến mốc đó, dự báo horizon kế tiếp, đo sai số, rồi dời mốc về sau. Trung bình sai số qua nhiều mốc đáng tin hơn một lần kiểm định duy nhất, đặc biệt khi có mùa vụ và sự kiện."
+ },
+ {
+  "c": "Kiểm định mô hình",
+  "q": "Forecast Value Added (FVA) là gì?",
+  "k": [
+   "fva",
+   "forecast value added",
+   "giá trị gia tăng dự báo",
+   "điều chỉnh thủ công"
+  ],
+  "a": "FVA = độ chính xác của một bước trong quy trình trừ độ chính xác của bước trước (hoặc của baseline naive). FVA âm nghĩa là bước đó (ví dụ điều chỉnh thủ công) làm dự báo tệ đi và nên bỏ hoặc cải tiến. Giúp tách phần đóng góp thật của mô hình và của con người."
+ },
+ {
+  "c": "Kiểm định mô hình",
+  "q": "Khoảng dự báo (prediction interval) tính thế nào?",
+  "k": [
+   "khoảng dự báo",
+   "khoảng tin cậy dự báo",
+   "prediction interval",
+   "conformal",
+   "độ rộng khoảng"
+  ],
+  "a": "Dạng cơ bản: dự báo ± z·σ(h), với σ(h) là độ lệch chuẩn sai số ở horizon h (z=1,28 cho 80%, 1,96 cho 95%). Khoảng rộng dần khi horizon tăng. Khi sai số không chuẩn hoặc lệch có thể dùng phân vị thực nghiệm của sai số backtest hoặc conformal prediction."
+ },
+ {
+  "c": "Nhu cầu đặc thù",
+  "q": "Nhu cầu gián đoạn (intermittent) phân loại thế nào?",
+  "k": [
+   "nhu cầu gián đoạn",
+   "intermittent",
+   "adi",
+   "cv2",
+   "lumpy",
+   "erratic"
+  ],
+  "a": "Dùng ADI (khoảng cách trung bình giữa hai lần có nhu cầu) và CV² (hệ số biến thiên bình phương của lượng nhu cầu). Ngưỡng Syntetos-Boylan: ADI<1,32 và CV²<0,49 là smooth; ADI≥1,32 và CV²<0,49 là intermittent; ADI<1,32 và CV²≥0,49 là erratic; cả hai vượt ngưỡng là lumpy."
+ },
+ {
+  "c": "Nhu cầu đặc thù",
+  "q": "Croston, SBA và TSB là gì?",
+  "k": [
+   "croston",
+   "sba",
+   "tsb",
+   "phương pháp croston",
+   "hàng bán chậm",
+   "slow moving"
+  ],
+  "a": "Croston làm mịn riêng lượng nhu cầu khi có bán và khoảng cách giữa các lần bán, dự báo = lượng / khoảng cách. Croston bị chệch cao; SBA nhân thêm (1−α/2) để hiệu chỉnh. TSB làm mịn xác suất xảy ra nhu cầu mỗi kỳ nên xử lý được hàng lỗi thời. Không nên dùng ETS/ARIMA thường cho chuỗi toàn số 0."
+ },
+ {
+  "c": "Nhu cầu đặc thù",
+  "q": "Dự báo sản phẩm mới (không có lịch sử) thế nào?",
+  "k": [
+   "sản phẩm mới",
+   "new product",
+   "cold start",
+   "bass",
+   "mô hình bass",
+   "sản phẩm tương tự"
+  ],
+  "a": "Dùng sản phẩm tương tự (analogy) để lấy đường cong ra mắt, khảo sát thị trường, ý kiến chuyên gia, hoặc mô hình khuếch tán Bass với ba tham số: tiềm năng thị trường m, hệ số đổi mới p, hệ số bắt chước q. Khi có vài tuần dữ liệu thực, cập nhật dần và chuyển sang mô hình thống kê."
+ },
+ {
+  "c": "Nhu cầu đặc thù",
+  "q": "Mô hình hóa khuyến mãi: uplift, cannibalization, pull-forward?",
+  "k": [
+   "khuyến mãi",
+   "promotion",
+   "uplift",
+   "cannibalization",
+   "ăn mòn doanh số",
+   "pull forward",
+   "halo",
+   "hiệu ứng khuyến mãi"
+  ],
+  "a": "Tách doanh số thành baseline và uplift do khuyến mãi. Cần tính cannibalization (khuyến mãi sản phẩm này làm giảm bán sản phẩm thay thế), halo (kéo theo sản phẩm bổ sung) và pull-forward/post-promo dip (khách mua dồn nên doanh số sau đó giảm). Trong dữ liệu Favorita, onpromotion là đặc trưng quan trọng nhất sau lịch sử bán."
+ },
+ {
+  "c": "Nhu cầu đặc thù",
+  "q": "Ngày lễ và sự kiện di động xử lý thế nào?",
+  "k": [
+   "ngày lễ",
+   "holiday",
+   "sự kiện di động",
+   "moving holiday",
+   "biến giả ngày lễ",
+   "tết",
+   "giáng sinh"
+  ],
+  "a": "Dùng biến giả cho ngày lễ, kèm biến trước/sau lễ (cửa sổ lead/lag) vì doanh số tăng trước lễ và giảm sau lễ. Lễ có ngày thay đổi hằng năm (Tết âm lịch, Phục sinh) phải đưa vào theo lịch từng năm, không dựa vào chỉ số mùa vụ cố định. Phân biệt lễ quốc gia, vùng và địa phương, và lễ đã được chuyển ngày."
+ },
+ {
+  "c": "Nhu cầu đặc thù",
+  "q": "Độ co giãn theo giá (price elasticity) tính thế nào?",
+  "k": [
+   "co giãn giá",
+   "price elasticity",
+   "độ co giãn",
+   "giá và doanh số",
+   "elasticity"
+  ],
+  "a": "Độ co giãn E = %ΔQ / %ΔP. |E|>1 là nhu cầu co giãn (giảm giá làm doanh thu tăng), |E|<1 là kém co giãn. Thường ước lượng bằng hồi quy log-log: hệ số của ln(giá) chính là độ co giãn. Cần kiểm soát khuyến mãi, mùa vụ và đối thủ để tránh ước lượng chệch."
+ },
+ {
+  "c": "Nhu cầu đặc thù",
+  "q": "Doanh số bị kiểm duyệt do hết hàng (stockout) xử lý thế nào?",
+  "k": [
+   "hết hàng",
+   "stockout",
+   "censored demand",
+   "nhu cầu bị kiểm duyệt",
+   "doanh số khác nhu cầu",
+   "unconstrained"
+  ],
+  "a": "Doanh số quan sát khi hết hàng thấp hơn nhu cầu thật, nên học từ nó làm dự báo bị thấp và dễ tạo vòng luẩn quẩn. Cách xử lý: đánh dấu ngày hết hàng, ước lượng nhu cầu không bị ràng buộc (nội suy, dùng tỷ lệ cùng thứ, mô hình riêng) hoặc loại các ngày đó khỏi huấn luyện."
+ },
+ {
+  "c": "Nhu cầu đặc thù",
+  "q": "Xử lý sự kiện bất thường (COVID, thiên tai, động đất) thế nào?",
+  "k": [
+   "sự kiện bất thường",
+   "covid",
+   "thiên tai",
+   "động đất",
+   "ngoại lệ",
+   "outlier",
+   "structural break"
+  ],
+  "a": "Không nên để các giai đoạn này kéo lệch mô hình. Cách làm: đánh dấu bằng biến giả (như cờ động đất Ecuador 16/04/2016 trong dự án này), hiệu chỉnh hoặc nội suy giá trị, hoặc bỏ giai đoạn đó khỏi huấn luyện. Khi có thay đổi cấu trúc kéo dài, ưu tiên dữ liệu gần và theo dõi lại mô hình."
+ },
+ {
+  "c": "Nhu cầu đặc thù",
+  "q": "Dự báo phân cấp và hòa hợp (reconciliation) là gì?",
+  "k": [
+   "dự báo phân cấp",
+   "hierarchical",
+   "reconciliation",
+   "bottom-up",
+   "top-down",
+   "minT",
+   "middle-out"
+  ],
+  "a": "Doanh số có cấu trúc phân cấp (SKU, nhóm hàng, cửa hàng, vùng, toàn quốc). Dự báo độc lập ở từng mức sẽ không cộng khớp. Bottom-up dự báo mức thấp rồi cộng lên; top-down dự báo tổng rồi chia theo tỷ lệ; middle-out bắt đầu từ mức giữa; MinT hòa hợp tối ưu mọi mức nên thường chính xác nhất."
+ },
+ {
+  "c": "Tồn kho & vận hành",
+  "q": "Công thức tồn kho an toàn (safety stock)?",
+  "k": [
+   "tồn kho an toàn",
+   "safety stock",
+   "ss",
+   "tồn an toàn"
+  ],
+  "a": "Khi lead time cố định: SS = z·σ_d·√L, với z theo mức phục vụ, σ_d độ lệch chuẩn nhu cầu mỗi kỳ, L lead time. Khi lead time cũng biến động: SS = z·√(L·σ_d² + d̄²·σ_L²). Thực hành tốt là dùng σ của sai số dự báo thay cho σ nhu cầu, vì tồn an toàn bù cho phần không dự báo được."
+ },
+ {
+  "c": "Tồn kho & vận hành",
+  "q": "Điểm đặt hàng lại (ROP) tính thế nào?",
+  "k": [
+   "rop",
+   "điểm đặt hàng",
+   "reorder point",
+   "điểm đặt hàng lại"
+  ],
+  "a": "ROP = nhu cầu trung bình mỗi kỳ × lead time + tồn kho an toàn. Khi tồn kho hiện có (cả hàng đang về) giảm xuống bằng hoặc dưới ROP thì đặt hàng. Trong báo cáo này ROP dùng lead time 2 ngày và tồn an toàn 1,65·σ·√2 (mức phục vụ 95%)."
+ },
+ {
+  "c": "Tồn kho & vận hành",
+  "q": "EOQ là gì?",
+  "k": [
+   "eoq",
+   "lượng đặt hàng kinh tế",
+   "economic order quantity",
+   "lô đặt hàng"
+  ],
+  "a": "EOQ = √(2·D·S / H), với D là nhu cầu năm, S là chi phí mỗi lần đặt hàng, H là chi phí lưu kho một đơn vị mỗi năm. Là lượng đặt làm tối thiểu tổng chi phí đặt hàng và lưu kho, với giả định nhu cầu ổn định. Dự báo tốt giúp ước lượng D chính xác hơn."
+ },
+ {
+  "c": "Tồn kho & vận hành",
+  "q": "Mức phục vụ (service level) và fill rate khác nhau thế nào?",
+  "k": [
+   "mức phục vụ",
+   "service level",
+   "fill rate",
+   "tỷ lệ đáp ứng",
+   "csl",
+   "hệ số z"
+  ],
+  "a": "Mức phục vụ chu kỳ (Type 1) là xác suất không hết hàng trong một chu kỳ đặt hàng; fill rate (Type 2) là tỷ lệ nhu cầu được đáp ứng ngay từ kho. Hệ số z thường dùng: 90% → 1,28; 95% → 1,645; 97,5% → 1,96; 99% → 2,33. Tăng mức phục vụ làm tồn an toàn tăng nhanh."
+ },
+ {
+  "c": "Tồn kho & vận hành",
+  "q": "Horizon dự báo và lead time quan hệ thế nào?",
+  "k": [
+   "lead time",
+   "thời gian giao hàng",
+   "horizon và lead time",
+   "chu kỳ đặt hàng"
+  ],
+  "a": "Quyết định đặt hàng hôm nay phải đáp ứng nhu cầu trong lead time cộng chu kỳ rà soát, nên horizon dự báo tối thiểu phải bằng khoảng thời gian đó. Lead time biến động cũng làm tăng tồn an toàn, nên cần đo cả độ biến động lead time chứ không chỉ giá trị trung bình."
+ },
+ {
+  "c": "Tồn kho & vận hành",
+  "q": "Hiệu ứng roi da (bullwhip) là gì?",
+  "k": [
+   "bullwhip",
+   "hiệu ứng roi da",
+   "khuếch đại nhu cầu",
+   "chuỗi cung ứng biến động"
+  ],
+  "a": "Biến động nhu cầu bị khuếch đại dần khi đi ngược chuỗi cung ứng từ bán lẻ đến nhà sản xuất, do dự báo cục bộ, đặt hàng theo lô, biến động giá và đầu cơ khi khan hàng. Giảm bằng cách chia sẻ dữ liệu bán hàng thực (POS, CPFR), rút ngắn lead time, ổn định giá."
+ },
+ {
+  "c": "Tồn kho & vận hành",
+  "q": "Phân loại ABC-XYZ là gì?",
+  "k": [
+   "abc xyz",
+   "phân loại abc",
+   "abc-xyz",
+   "ma trận abc xyz"
+  ],
+  "a": "ABC phân nhóm theo giá trị doanh số (A nhóm ít sản phẩm chiếm phần lớn doanh số). XYZ phân nhóm theo độ biến động nhu cầu (CV: X thấp, Y vừa, Z cao). Ví dụ AX cần dự báo chính xác và tồn kho tinh gọn, CZ có thể dùng quy tắc đơn giản. Giúp phân bổ công sức dự báo hợp lý."
+ },
+ {
+  "c": "Quản trị quy trình",
+  "q": "Quy trình S&OP là gì?",
+  "k": [
+   "s&op",
+   "sop",
+   "sales and operations planning",
+   "hoạch định bán hàng và vận hành"
+  ],
+  "a": "Sales & Operations Planning là chu kỳ hằng tháng gồm: thu thập dữ liệu, kế hoạch nhu cầu (dự báo thống kê cộng phán đoán), kế hoạch cung ứng, họp tiền S&OP, họp điều hành để chốt một bộ số duy nhất. Mục tiêu là thống nhất bán hàng, vận hành và tài chính."
+ },
+ {
+  "c": "Quản trị quy trình",
+  "q": "Dự báo đồng thuận và CPFR là gì?",
+  "k": [
+   "dự báo đồng thuận",
+   "consensus",
+   "cpfr",
+   "hợp tác dự báo",
+   "collaborative planning"
+  ],
+  "a": "Dự báo đồng thuận kết hợp dự báo thống kê với góp ý của bán hàng, marketing, tài chính. CPFR (Collaborative Planning, Forecasting and Replenishment) mở rộng việc đó ra đối tác trong chuỗi cung ứng, chia sẻ khuyến mãi, tồn kho và dự báo. Mọi điều chỉnh cần được ghi lại và đo bằng FVA."
+ },
+ {
+  "c": "Quản trị quy trình",
+  "q": "Nên theo dõi những KPI nào của quy trình dự báo?",
+  "k": [
+   "kpi dự báo",
+   "chỉ số quản trị dự báo",
+   "governance",
+   "theo dõi dự báo",
+   "đo lường quy trình"
+  ],
+  "a": "Độ chính xác (WAPE/MASE), bias, FVA so với naive, tracking signal, độ phủ của khoảng dự báo, và các hệ quả kinh doanh: mức phục vụ, tỷ lệ hết hàng, vòng quay và giá trị tồn kho. Theo dõi theo nhóm hàng quan trọng (nhóm A) và theo horizon."
+ },
+ {
+  "c": "Quản trị quy trình",
+  "q": "Khi nào được điều chỉnh thủ công (override) dự báo?",
+  "k": [
+   "điều chỉnh thủ công",
+   "override",
+   "phán đoán chuyên gia",
+   "điều chỉnh dự báo"
+  ],
+  "a": "Chỉ nên điều chỉnh khi có thông tin mà mô hình chưa biết (khuyến mãi mới, đối thủ, thay đổi luật, sự kiện lớn). Điều chỉnh nhỏ thường kém hiệu quả và hay làm bias tăng, điều chỉnh dựa trên thông tin cụ thể thường có ích. Luôn ghi lý do và đo FVA."
+ },
+ {
+  "c": "Quản trị quy trình",
+  "q": "Khi nào cần huấn luyện lại mô hình và giám sát drift?",
+  "k": [
+   "huấn luyện lại",
+   "drift",
+   "giám sát mô hình",
+   "retrain",
+   "concept drift",
+   "cập nhật mô hình"
+  ],
+  "a": "Đặt lịch huấn luyện lại định kỳ (hằng tuần hoặc hằng tháng) và cả theo điều kiện: sai số tăng liên tục, bias lệch, tracking signal vượt ngưỡng, hoặc có thay đổi lớn (danh mục, giá, kênh bán). Theo dõi phân phối đặc trưng để phát hiện drift sớm."
+ },
+ {
+  "c": "Dự án này",
+  "q": "Mô hình dự báo trong báo cáo này hoạt động thế nào?",
+  "k": [
+   "mô hình trong báo cáo",
+   "mô hình của dự án",
+   "báo cáo này dùng mô hình gì",
+   "mô hình dự báo của nhóm",
+   "cách mô hình hoạt động"
+  ],
+  "a": "Gradient Boosting (scikit-learn) dự báo trực tiếp 16 ngày cho 1.782 chuỗi (54 cửa hàng × 33 nhóm hàng), dùng {feat} đặc trưng từ cả 7 bảng và {rows} mẫu huấn luyện lấy từ các điểm cắt hằng tuần. Backtest 16 ngày: MAPE tổng theo ngày {mape}% so với {b_mape}% của baseline, RMSLE {rmsle} so với {b_rmsle}."
+ },
+ {
+  "c": "Dự án này",
+  "q": "Vì sao giá dầu tương quan mạnh nhưng không giúp mô hình?",
+  "k": [
+   "giá dầu không giúp",
+   "oil không cải thiện",
+   "tương quan dầu",
+   "giá dầu mô hình"
+  ],
+  "a": "Tương quan r = −0,78 giữa doanh số tháng và giá dầu phản ánh cả hai cùng có xu hướng theo thời gian (tương quan có thể là giả). Với dự báo ngắn hạn 16 ngày, lịch sử bán hàng gần đây đã chứa sẵn mức nền nên giá dầu không thêm thông tin; thử bỏ oil cho RMSLE thay đổi trong mức nhiễu."
+ },
+ {
+  "c": "Dự án này",
+  "q": "Vì sao backtest chỉ dùng 16 ngày và hạn chế là gì?",
+  "k": [
+   "backtest 16 ngày",
+   "hạn chế kiểm định",
+   "vì sao 16 ngày",
+   "tập kiểm định ngắn"
+  ],
+  "a": "16 ngày bằng đúng horizon của test (16–31/08/2017) nên mô phỏng sát bài toán thật. Hạn chế: chỉ có 1 ngày lễ quốc gia và 2 ngày lễ địa phương trong cửa sổ đó, nên chưa đánh giá được tác dụng của bảng ngày lễ; một mốc cắt duy nhất cũng kém ổn định hơn rolling-origin nhiều mốc."
+ },
+ {
+  "c": "Dự án này",
+  "q": "Quy tắc đặt dự báo bằng 0 cho chuỗi không bán là gì?",
+  "k": [
+   "dự báo bằng 0",
+   "chuỗi không bán",
+   "cửa hàng đóng cửa",
+   "quy tắc số 0",
+   "zero rule"
+  ],
+  "a": "Chuỗi (cửa hàng × nhóm hàng) không phát sinh doanh số nào trong 21 ngày gần nhất được dự báo bằng 0, vì thường là cửa hàng chưa mở, đã đóng hoặc nhóm hàng không bán ở đó. Quy tắc này tránh việc mô hình tạo ra các giá trị nhỏ dương làm tăng sai số RMSLE."
+ }
+]
