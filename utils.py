@@ -101,7 +101,7 @@ def clean_sales_data(
 
 def engineer_features(data: pd.DataFrame) -> pd.DataFrame:
     """Create calendar, promotion, lag and rolling features without target leakage."""
-    frame = _normalize_columns(data).copy()
+    frame = _normalize_columns(data)
     if "date" not in frame or "sales" not in frame:
         raise ValueError("Cần có cột date và sales để tạo đặc trưng.")
     frame["date"] = pd.to_datetime(frame["date"], errors="coerce")
@@ -122,22 +122,52 @@ def engineer_features(data: pd.DataFrame) -> pd.DataFrame:
 
     group_columns = [c for c in ("store_nbr", "family") if c in frame.columns]
     if group_columns:
-        grouped = frame.groupby(group_columns, dropna=False, sort=False)["sales"]
-        frame["lag_1"] = grouped.shift(1)
-        frame["lag_7"] = grouped.shift(7)
-        frame["lag_28"] = grouped.shift(28)
-        frame["rolling_mean_7"] = grouped.transform(
-            lambda values: values.shift(1).rolling(7, min_periods=1).mean()
-        )
-        frame["rolling_mean_28"] = grouped.transform(
-            lambda values: values.shift(1).rolling(28, min_periods=1).mean()
-        )
+        groups = frame.groupby(
+            group_columns, dropna=False, sort=False, observed=True
+        ).indices.values()
     else:
-        frame["lag_1"] = frame["sales"].shift(1)
-        frame["lag_7"] = frame["sales"].shift(7)
-        frame["lag_28"] = frame["sales"].shift(28)
-        frame["rolling_mean_7"] = frame["sales"].shift(1).rolling(7, min_periods=1).mean()
-        frame["rolling_mean_28"] = frame["sales"].shift(1).rolling(28, min_periods=1).mean()
+        groups = (np.arange(len(frame)),)
+
+    sales = frame["sales"].to_numpy(dtype=np.float64, na_value=np.nan)
+    lag_1 = np.full(len(frame), np.nan)
+    lag_7 = np.full(len(frame), np.nan)
+    lag_28 = np.full(len(frame), np.nan)
+    rolling_mean_7 = np.full(len(frame), np.nan)
+    rolling_mean_28 = np.full(len(frame), np.nan)
+
+    for positions in groups:
+        values = sales[positions]
+        size = len(values)
+        for lag, result in ((1, lag_1), (7, lag_7), (28, lag_28)):
+            if size > lag:
+                result[positions[lag:]] = values[:-lag]
+
+        finite = np.isfinite(values)
+        sums = np.empty(size + 1, dtype=np.float64)
+        sums[0] = 0
+        np.cumsum(np.where(finite, values, 0), out=sums[1:])
+        counts = np.empty(size + 1, dtype=np.int64)
+        counts[0] = 0
+        np.cumsum(finite, dtype=np.int64, out=counts[1:])
+        row_numbers = np.arange(size)
+
+        for window, result in ((7, rolling_mean_7), (28, rolling_mean_28)):
+            starts = np.maximum(0, row_numbers - window)
+            window_counts = counts[row_numbers] - counts[starts]
+            means = np.full(size, np.nan)
+            np.divide(
+                sums[row_numbers] - sums[starts],
+                window_counts,
+                out=means,
+                where=window_counts > 0,
+            )
+            result[positions] = means
+
+    frame["lag_1"] = lag_1
+    frame["lag_7"] = lag_7
+    frame["lag_28"] = lag_28
+    frame["rolling_mean_7"] = rolling_mean_7
+    frame["rolling_mean_28"] = rolling_mean_28
 
     return frame
 
