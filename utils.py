@@ -81,15 +81,30 @@ def clean_sales_data(
     else:
         cleaned = cleaned.dropna(subset=["sales"])
 
+    if cleaned.empty:
+        raise ValueError(
+            "Không còn dòng hợp lệ sau khi xử lý ngày và doanh số; "
+            "hãy kiểm tra dữ liệu hoặc tùy chọn thay giá trị thiếu."
+        )
+
     for column in ("family", "store_nbr"):
         if column in cleaned:
             cleaned[column] = cleaned[column].fillna("Không xác định")
 
     if remove_duplicates:
-        # Facts are keyed by id in the ERD; a repeated date/store/family can
-        # still be a legitimate separate observation in generic sales files.
-        keys = ["id"] if "id" in cleaned.columns else None
-        cleaned = cleaned.drop_duplicates(subset=keys, keep="last")
+        cleaned = cleaned.drop_duplicates(keep="first")
+        if "id" in cleaned.columns:
+            repeated_ids = cleaned["id"].notna() & cleaned.duplicated(
+                subset=["id"], keep=False
+            )
+            if repeated_ids.any():
+                duplicate_ids = (
+                    cleaned.loc[repeated_ids, "id"].drop_duplicates().head(5).tolist()
+                )
+                raise ValueError(
+                    "Dữ liệu có các bản ghi trùng id nhưng nội dung khác nhau "
+                    f"(ví dụ: {duplicate_ids}). Hãy kiểm tra dữ liệu trước khi tiếp tục."
+                )
 
     if cap_outliers and not cleaned.empty:
         lower = cleaned["sales"].quantile(0.01)
