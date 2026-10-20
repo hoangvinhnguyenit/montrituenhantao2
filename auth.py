@@ -19,6 +19,13 @@ ROLES = (ROLE_USER, ROLE_ADMIN)
 ITERATIONS = 240_000
 MAX_FAILED_LOGINS = 5
 LOCK_SECONDS = 60
+PRESERVED_DATA_KEYS = (
+    "raw_df",
+    "processed_df",
+    "test_df",
+    "source_tables",
+    "source_label",
+)
 
 # 8 chức năng (khớp thứ tự và tên trong menu). key dùng để lưu quyền.
 PAGES = [
@@ -255,9 +262,20 @@ def current_user() -> dict | None:
         return None
     user = get_user(username)
     if user is None or not user["active"]:
-        st.session_state.clear()
+        _clear_session_preserving_data()
         return None
     return user
+
+
+def _clear_session_preserving_data() -> None:
+    preserved_data = {
+        key: st.session_state[key]
+        for key in PRESERVED_DATA_KEYS
+        if key in st.session_state
+    }
+    st.session_state.clear()
+    for key, value in preserved_data.items():
+        st.session_state[key] = value
 
 
 def allowed_page_keys(user: dict) -> list[str]:
@@ -267,7 +285,7 @@ def allowed_page_keys(user: dict) -> list[str]:
 
 
 def logout() -> None:
-    st.session_state.clear()
+    _clear_session_preserving_data()
     st.rerun()
 
 
@@ -304,7 +322,7 @@ def render_login() -> None:
                     st.session_state["login_fails"] = 0
                 st.error("Sai tên đăng nhập hoặc mật khẩu, hoặc tài khoản đã bị khóa.")
             else:
-                st.session_state.clear()
+                _clear_session_preserving_data()
                 st.session_state["auth_user"] = user["username"]
                 st.rerun()
 
