@@ -47,7 +47,7 @@ def save_dataset(sales, test, tables, source):
         st.session_state[key] = default
 
 
-local_tab, supabase_tab = st.tabs(["Tệp cục bộ", "Supabase"])
+local_tab, supabase_tab = st.tabs(["Tệp cục bộ", "Đồng bộ dữ liệu (Supabase)"])
 with local_tab:
     files = st.file_uploader(
         "Chọn CSV/Excel hoặc ZIP chứa các bảng ERD",
