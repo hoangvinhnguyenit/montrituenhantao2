@@ -126,10 +126,6 @@ with supabase_tab:
         "\n".join(f"{table}" for table in ERD_TABLES),
         language="text",
     )
-    st.caption(
-        "Bảng train là bắt buộc (ứng dụng cũng hỗ trợ tên cũ train2). "
-        "Các bảng còn lại là tùy chọn; bảng thiếu sẽ được bỏ qua."
-    )
 
 sales = st.session_state.raw_df
 if sales is not None and not sales.empty:
