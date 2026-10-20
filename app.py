@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
-"""Streamlit page router (giao diện đồng bộ với index.html)."""
+"""Streamlit page router: đăng nhập + phân quyền theo từng chức năng."""
 
 import streamlit as st
 
-from theme import apply_theme
+import auth
+from theme import MENU_COLORS, apply_theme
 
 st.set_page_config(
     page_title="Dự báo doanh số & quản trị tồn kho",
@@ -12,18 +13,54 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# CSS toàn cục: áp dụng cho mọi trang vì app.py chạy trước mỗi trang.
-apply_theme()
+try:
+    auth.init_store()
+    user = auth.current_user()
+except RuntimeError as exc:
+    apply_theme(menu_colors=[])
+    st.error(f"Không thể kết nối kho tài khoản: {exc}")
+    st.stop()
 
-pages = [
-    st.Page("app_pages/0_Dashboard.py", title="Tổng quan", icon=":material/dashboard:", default=True),
-    st.Page("app_pages/1_Du_lieu.py", title="Nạp Dữ liệu", icon=":material/table_view:"),
-    st.Page("app_pages/2_Tien_xu_ly.py", title="Xử lý dữ liệu", icon=":material/tune:"),
-    st.Page("app_pages/3_Phan_tich_EDA.py", title="Phân tích dữ liệu (EDA)", icon=":material/analytics:"),
-    st.Page("app_pages/4_Huan_luyen.py", title="Thiết lập mô hình", icon=":material/model_training:"),
-    st.Page("app_pages/5_Du_bao.py", title="Dự báo doanh số", icon=":material/trending_up:"),
-    st.Page("app_pages/6_Quan_tri_ton_kho.py", title="Quản trị tồn kho", icon=":material/inventory_2:"),
-    st.Page("app_pages/7_Bao_cao.py", title="Báo cáo tổng hợp", icon=":material/description:"),
-]
+if user is None:
+    apply_theme(menu_colors=[])
+    auth.render_login()
+    st.stop()
 
+# Chỉ đăng ký những trang user được phép; trang không đăng ký thì không truy cập được.
+allowed = set(auth.allowed_page_keys(user))
+pages, colors = [], []
+for index, page in enumerate(auth.PAGES):
+    if page["key"] in allowed:
+        pages.append(
+            st.Page(
+                page["path"],
+                title=page["title"],
+                icon=page["icon"],
+                default=not pages,  # trang đầu tiên được phép làm trang mặc định
+            )
+        )
+        colors.append(MENU_COLORS[index])  # giữ đúng màu của từng chức năng
+
+if user["role"] == auth.ROLE_ADMIN:
+    pages.append(
+        st.Page(
+            "app_pages/8_Quan_tri_nguoi_dung.py",
+            title="Quản lý người dùng",
+            icon=":material/admin_panel_settings:",
+            default=not pages,
+        )
+    )
+    colors.append(("#94a3b8", "#475569"))
+
+apply_theme(menu_colors=colors)
+
+if not pages:
+    st.warning(
+        "Tài khoản của bạn chưa được cấp quyền sử dụng chức năng nào. "
+        "Vui lòng liên hệ quản trị viên."
+    )
+    auth.render_account_sidebar(user)
+    st.stop()
+
+auth.render_account_sidebar(user)
 st.navigation(pages, position="sidebar").run()

@@ -33,10 +33,11 @@ _NAV = '[data-testid="stSidebarNav"]'
 _COL = ':is([data-testid="stColumn"],[data-testid="column"])'
 
 
-def _build_css() -> str:
+def _build_css(menu_colors=None) -> str:
+    palette = MENU_COLORS if menu_colors is None else menu_colors
     menu_vars = "\n".join(
         f"{_NAV} li:nth-child({i}){{--c1:{a};--c2:{b}}}"
-        for i, (a, b) in enumerate(MENU_COLORS, start=1)
+        for i, (a, b) in enumerate(palette, start=1)
     )
     kpi = "\n".join(
         f"{_COL}:nth-child({i}) [data-testid=\"stMetric\"]{{background:linear-gradient(135deg,{a},{b})}}"
@@ -165,9 +166,9 @@ def _register_plotly_template() -> None:
     pio.templates.default = "favorita"
 
 
-def apply_theme() -> None:
+def apply_theme(menu_colors=None) -> None:
     """Gọi một lần trong app.py, trước st.navigation(...).run()."""
-    st.markdown(f"<style>{_build_css()}</style>", unsafe_allow_html=True)
+    st.markdown(f"<style>{_build_css(menu_colors)}</style>", unsafe_allow_html=True)
     _register_plotly_template()
 
 
