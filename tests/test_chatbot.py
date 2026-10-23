@@ -67,6 +67,35 @@ class ChatbotProviderTests(unittest.TestCase):
         )
         self.assertIn("số liệu báo cáo", captured["config"]["system_instruction"])
 
+    def test_gemini_server_error_suggests_retry_without_showing_key(self):
+        class ServerError(Exception):
+            code = 503
+
+        with patch.object(
+            chatbot,
+            "_configured_provider",
+            return_value="gemini",
+        ):
+            message = "".join(chatbot._stream_error(ServerError("internal details")))
+
+        self.assertIn("HTTP 503", message)
+        self.assertIn("Thử gửi lại", message)
+        self.assertNotIn("internal details", message)
+
+    def test_gemini_quota_error_points_to_quota_settings(self):
+        class ClientError(Exception):
+            code = 429
+
+        with patch.object(
+            chatbot,
+            "_configured_provider",
+            return_value="gemini",
+        ):
+            message = "".join(chatbot._stream_error(ClientError()))
+
+        self.assertIn("HTTP 429", message)
+        self.assertIn("quota/billing", message)
+
 
 if __name__ == "__main__":
     unittest.main()

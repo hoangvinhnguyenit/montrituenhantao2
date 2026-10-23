@@ -230,14 +230,42 @@ def _offline_answer(question: str, summary, recommendations) -> str:
 
 def _stream_error(exc: Exception):
     name = type(exc).__name__
-    if name == "AuthenticationError":
+    provider = _configured_provider()
+    code = getattr(exc, "code", None)
+    status_code = code if isinstance(code, int) else None
+
+    if provider == "gemini" and (name == "ServerError" or (status_code and status_code >= 500)):
+        status = f" (HTTP {status_code})" if status_code else ""
+        yield (
+            f"Gemini API đang trả lỗi máy chủ{status}. Lỗi này thường tạm thời hoặc "
+            "dịch vụ đang quá tải. Thử gửi lại sau ít phút; nếu vẫn lặp lại, kiểm tra "
+            "Streamlit Cloud → Manage app → Logs và trạng thái Gemini API."
+        )
+        return
+    if provider == "gemini" and status_code == 429:
+        yield (
+            "Gemini API đã chạm hạn mức hoặc giới hạn tốc độ (HTTP 429). Kiểm tra "
+            "quota/billing của dự án gắn với khóa trong Google AI Studio, chờ hạn mức "
+            "được làm mới rồi thử lại."
+        )
+        return
+    if provider == "gemini" and status_code in {400, 401, 403, 404}:
+        if status_code == 404:
+            detail = "Không tìm thấy model; kiểm tra `GEMINI_MODEL` có đúng model được API hỗ trợ không."
+        elif status_code in {401, 403}:
+            detail = "Kiểm tra khóa `GEMINI_API_KEY`, quyền Gemini API và dự án Google gắn với khóa."
+        else:
+            detail = "Yêu cầu không hợp lệ; kiểm tra cấu hình model và cập nhật ứng dụng/dependencies."
+        yield f"Gemini API trả lỗi HTTP {status_code}. {detail}"
+        return
+    if provider == "anthropic" and name == "AuthenticationError":
         yield (
             "Anthropic từ chối xác thực API key. Khóa Google AI Studio không dùng "
             "được với Anthropic; hãy cấu hình `GEMINI_API_KEY` để dùng Gemini hoặc "
             "nhập API key Anthropic hợp lệ. Sau khi cập nhật, khởi động lại ứng dụng."
         )
         return
-    if name in {"APIError", "ClientError", "GoogleAPIError"}:
+    if provider == "gemini" and name in {"APIError", "ClientError", "GoogleAPIError"}:
         yield (
             "Google Gemini không chấp nhận yêu cầu. Hãy kiểm tra `GEMINI_API_KEY` "
             "được tạo từ Google AI Studio, quyền sử dụng Gemini API của dự án, "
