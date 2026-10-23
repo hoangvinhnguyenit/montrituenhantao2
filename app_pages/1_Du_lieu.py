@@ -19,8 +19,8 @@ initialize_session_state()
 
 st.title("Dữ liệu bán hàng")
 st.caption(
-    "Nạp dữ liệu theo ERD: train, test, stores, transactions, oil, "
-    "holidays_events và sample_submission."
+    "Nạp dữ liệu theo 2 cách: nạp trực tiếp file .csv (nhanh nhất)"
+    "hoặc đồng bộ dữ liệu từ Supabase (thời gian chờ lâu hơn)"
 )
 
 
@@ -84,7 +84,7 @@ with supabase_tab:
     if supabase_url and supabase_key:
         st.success("Đã tìm thấy cấu hình Supabase phía máy chủ; khóa không được hiển thị.")
         st.caption(
-            "Ứng dụng nạp song song tối đa 4 bảng, mỗi lần yêu cầu tối đa 10.000 dòng "
+            "Ứng dụng nạp song song tối đa 4 bảng, mỗi lần yêu cầu tối đa 1.000 dòng/1s "
             "và tự thử lại một lần nếu kết nối bị ngắt."
         )
         if st.button("Nạp từ Supabase", type="primary"):

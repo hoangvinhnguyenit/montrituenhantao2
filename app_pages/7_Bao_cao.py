@@ -33,6 +33,7 @@ from app_common import (
     initialize_session_state,
     show_data_required,
 )
+from chatbot import build_context, render_report_chat
 from inventory import abc_classification
 
 # Tuần tính từ thứ Hai đến Chủ nhật (khớp tuần ISO).
@@ -810,3 +811,25 @@ if forecast is not None and not forecast.empty:
         "forecast.csv",
         "text/csv",
     )
+
+# ---- Trợ lý AI hỏi đáp (dùng đúng số liệu của báo cáo đang hiển thị)
+chat_context = build_context(
+    meta=meta,
+    summary=summary,
+    recommendations=recommendations,
+    overview=overview,
+    family_table=family_table,
+    store_table=store_table,
+    abc=abc_view if abc is not None else None,
+    promo_summary=promo_summary,
+    forecast_by_period=forecast_by_period,
+    metrics=metrics,
+    inventory_plan=inventory_plan,
+    scope_match=scope_match,
+)
+render_report_chat(
+    chat_context,
+    summary,
+    recommendations,
+    scope_label=f"{label} · {st.session_state.selected_store} · {st.session_state.selected_family}",
+)
