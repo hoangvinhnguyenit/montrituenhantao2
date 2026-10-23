@@ -91,12 +91,14 @@ Cài dependencies bằng `pip install -r requirements.txt`. Để chạy chatbot
 tạo `.streamlit/secrets.toml` (tệp đã được bỏ qua bởi Git) với khóa ở cấp cao nhất:
 
 ```toml
-ANTHROPIC_API_KEY = "sk-ant-..."
-# Tùy chọn: CHATBOT_MODEL = "claude-sonnet-5-5"
+GEMINI_API_KEY = "khóa lấy từ https://aistudio.google.com/api-keys"
+# Tùy chọn: GEMINI_MODEL = "gemini-3.8-flash"
 ```
 
-Trên Streamlit Community Cloud, thêm cùng các giá trị này trong **App settings →
-Secrets**. Không khai báo khóa như biến Python trong `app.py`, không gửi khóa lên
-GitHub; sau khi thay đổi Secrets, khởi động lại ứng dụng nếu Streamlit chưa tự
-tải lại. Nếu giao diện báo chưa đọc được khóa, kiểm tra đúng tên
-`ANTHROPIC_API_KEY`, dấu ngoặc kép TOML và rằng secret nằm trong app đang chạy.
+Trên Streamlit Community Cloud, thêm các giá trị này trong **App settings →
+Secrets**. Ứng dụng ưu tiên Gemini nếu có `GEMINI_API_KEY`; khóa từ Google AI
+Studio không dùng được với Anthropic. Nếu muốn dùng Anthropic thay thế, cấu hình
+`ANTHROPIC_API_KEY` và tùy chọn `ANTHROPIC_MODEL = "claude-sonnet-5-5"`.
+Không khai báo khóa như biến Python trong `app.py`, không gửi khóa lên GitHub;
+sau khi thay đổi Secrets, khởi động lại ứng dụng. Kiểm tra khóa Google AI Studio
+còn hiệu lực và dự án được phép sử dụng Gemini API nếu vẫn gặp lỗi xác thực/quyền.

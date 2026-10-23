@@ -2,8 +2,10 @@
 """Chatbox AI hỏi đáp về báo cáo: trả lời dựa trên số liệu của kỳ báo cáo đang xem.
 
 Cấu hình (biến môi trường hoặc st.secrets):
-    ANTHROPIC_API_KEY  khóa API (bắt buộc để dùng AI; thiếu thì chạy chế độ tra cứu đơn giản)
-    CHATBOT_MODEL      tên mô hình (mặc định claude-sonnet-5-5)
+    GEMINI_API_KEY     khóa từ Google AI Studio (được ưu tiên nếu có)
+    GEMINI_MODEL       tên mô hình Gemini (mặc định gemini-3.8-flash)
+    ANTHROPIC_API_KEY  khóa Anthropic (tùy chọn, dùng nếu không có khóa Gemini)
+    ANTHROPIC_MODEL    tên mô hình Anthropic (mặc định claude-sonnet-5-5)
 Cài đặt: pip install -r requirements.txt
 """
 
@@ -16,7 +18,8 @@ import pandas as pd
 import streamlit as st
 from streamlit.errors import StreamlitSecretNotFoundError
 
-DEFAULT_MODEL = "claude-sonnet-5-5"
+DEFAULT_GEMINI_MODEL = "gemini-3.8-flash"
+DEFAULT_ANTHROPIC_MODEL = "claude-sonnet-5-5"
 MAX_CONTEXT_CHARS = 14_000
 MAX_HISTORY_TURNS = 8
 MAX_QUESTION_CHARS = 1_000
@@ -55,18 +58,34 @@ def _secret(name: str) -> str | None:
     return str(value) if value else None
 
 
+def _configured_provider() -> str | None:
+    if _secret("GEMINI_API_KEY"):
+        return "gemini"
+    if _secret("ANTHROPIC_API_KEY"):
+        return "anthropic"
+    return None
+
+
 def _ai_unavailable_reason() -> str | None:
-    if not _secret("ANTHROPIC_API_KEY"):
+    provider = _configured_provider()
+    if provider == "gemini":
+        try:
+            from google import genai  # noqa: F401
+        except ImportError:
+            return "Chưa cài gói `google-genai`. Chạy `pip install -r requirements.txt` rồi khởi động lại."
+        return None
+    if provider == "anthropic":
+        try:
+            import anthropic  # noqa: F401
+        except ImportError:
+            return "Chưa cài gói `anthropic`. Chạy `pip install -r requirements.txt` rồi khởi động lại."
+        return None
+    if not provider:
         return (
-            "Chưa đọc được ANTHROPIC_API_KEY. Thêm khóa vào "
-            "`.streamlit/secrets.toml` (dạng `ANTHROPIC_API_KEY = \"sk-ant-...\"`) "
+            "Chưa đọc được `GEMINI_API_KEY` hoặc `ANTHROPIC_API_KEY`. Thêm khóa vào "
+            "`.streamlit/secrets.toml` "
             "hoặc cấu hình Secrets của Streamlit Cloud, rồi khởi động lại ứng dụng."
         )
-    try:
-        import anthropic  # noqa: F401
-    except ImportError:
-        return "Chưa cài gói `anthropic`. Chạy `pip install -r requirements.txt` rồi khởi động lại."
-    return None
 
 
 def ai_available() -> bool:
@@ -146,6 +165,34 @@ def build_context(
 
 # ------------------------------------------------------------------ trả lời
 def _stream_ai(question: str, context: str, history: list[dict]):
+    provider = _configured_provider()
+    system = f"{SYSTEM_PROMPT}\n\n<BAO_CAO>\n{context}\n</BAO_CAO>"
+    if provider == "gemini":
+        from google import genai
+        from google.genai import types
+
+        client = genai.Client(api_key=_secret("GEMINI_API_KEY"))
+        contents = [
+            {
+                "role": "model" if message["role"] == "assistant" else "user",
+                "parts": [{"text": message["content"]}],
+            }
+            for message in history[-MAX_HISTORY_TURNS * 2 :]
+        ]
+        contents.append({"role": "user", "parts": [{"text": question}]})
+        stream = client.models.generate_content_stream(
+            model=_secret("GEMINI_MODEL") or DEFAULT_GEMINI_MODEL,
+            contents=contents,
+            config=types.GenerateContentConfig(
+                system_instruction=system,
+                max_output_tokens=MAX_OUTPUT_TOKENS,
+            ),
+        )
+        for chunk in stream:
+            if chunk.text:
+                yield chunk.text
+        return
+
     import anthropic
 
     client = anthropic.Anthropic(api_key=_secret("ANTHROPIC_API_KEY"))
@@ -155,9 +202,13 @@ def _stream_ai(question: str, context: str, history: list[dict]):
     ]
     messages.append({"role": "user", "content": question})
     with client.messages.stream(
-        model=_secret("CHATBOT_MODEL") or DEFAULT_MODEL,
+        model=(
+            _secret("ANTHROPIC_MODEL")
+            or _secret("CHATBOT_MODEL")
+            or DEFAULT_ANTHROPIC_MODEL
+        ),
         max_tokens=MAX_OUTPUT_TOKENS,
-        system=f"{SYSTEM_PROMPT}\n\n<BAO_CAO>\n{context}\n</BAO_CAO>",
+        system=system,
         messages=messages,
     ) as stream:
         yield from stream.text_stream
@@ -172,13 +223,27 @@ def _offline_answer(question: str, summary, recommendations) -> str:
         lines = summary
     body = "\n".join(f"- {line}" for line in lines)
     return (
-        f"{body}\n\n_Chưa cấu hình `ANTHROPIC_API_KEY` nên đây chỉ là nhận xét tự động có sẵn "
+        f"{body}\n\n_Chưa cấu hình khóa API AI nên đây chỉ là nhận xét tự động có sẵn "
         "của báo cáo, chưa phải trả lời riêng cho câu hỏi của bạn._"
     )
 
 
 def _stream_error(exc: Exception):
     name = type(exc).__name__
+    if name == "AuthenticationError":
+        yield (
+            "Anthropic từ chối xác thực API key. Khóa Google AI Studio không dùng "
+            "được với Anthropic; hãy cấu hình `GEMINI_API_KEY` để dùng Gemini hoặc "
+            "nhập API key Anthropic hợp lệ. Sau khi cập nhật, khởi động lại ứng dụng."
+        )
+        return
+    if name in {"APIError", "ClientError", "GoogleAPIError"}:
+        yield (
+            "Google Gemini không chấp nhận yêu cầu. Hãy kiểm tra `GEMINI_API_KEY` "
+            "được tạo từ Google AI Studio, quyền sử dụng Gemini API của dự án, "
+            "hạn mức API và tên mô hình `GEMINI_MODEL`."
+        )
+        return
     yield f"Không gọi được trợ lý AI ({name}). Vui lòng thử lại sau ít phút."
 
 
@@ -189,9 +254,17 @@ def render_report_chat(context: str, summary, recommendations, scope_label: str)
     st.subheader("Trợ lý AI hỏi đáp báo cáo")
     unavailable_reason = _ai_unavailable_reason()
     use_ai = unavailable_reason is None
+    provider = _configured_provider()
     st.caption(
         f"Hỏi về số liệu của báo cáo đang xem ({scope_label}). Câu trả lời chỉ dựa trên dữ liệu "
         "trên trang này và mang tính tham khảo; hãy kiểm tra trước khi ra quyết định."
+        + (
+            " Đang dùng Google Gemini."
+            if provider == "gemini"
+            else " Đang dùng Anthropic."
+            if provider == "anthropic"
+            else ""
+        )
     )
     if unavailable_reason:
         st.warning(f"Đang ở chế độ không AI. {unavailable_reason}")
