@@ -24,7 +24,8 @@ DEFAULT_ANTHROPIC_MODEL = "claude-sonnet-5-5"
 MAX_CONTEXT_CHARS = 14_000
 MAX_HISTORY_TURNS = 8
 MAX_QUESTION_CHARS = 1_000
-MAX_OUTPUT_TOKENS = 900
+# Gemini 3.x tính cả token suy luận vào giới hạn này; 900 dễ bị ăn hết -> câu trả lời rỗng.
+MAX_OUTPUT_TOKENS = 4096
 HISTORY_KEY = "report_chat_history"
 
 SYSTEM_PROMPT = """Bạn là trợ lý phân tích của hệ thống "Dự báo doanh số & quản trị tồn kho" \
@@ -165,7 +166,13 @@ def build_context(
 
 
 # ------------------------------------------------------------------ trả lời
+def _clean_history(history: list[dict]) -> list[dict]:
+    """Bỏ lượt trả lời rỗng: API Gemini/Anthropic từ chối nội dung rỗng (HTTP 400)."""
+    return [m for m in history if str(m.get("content", "")).strip()]
+
+
 def _stream_ai(question: str, context: str, history: list[dict]):
+    history = _clean_history(history)
     provider = _configured_provider()
     system = f"{SYSTEM_PROMPT}\n\n<BAO_CAO>\n{context}\n</BAO_CAO>"
     if provider == "gemini":
@@ -181,9 +188,8 @@ def _stream_ai(question: str, context: str, history: list[dict]):
             for message in history[-MAX_HISTORY_TURNS * 2 :]
         ]
         contents.append({"role": "user", "parts": [{"text": question}]})
-        configured_model = _secret("GEMINI_MODEL")
-        models = [configured_model or DEFAULT_GEMINI_MODEL]
-        if not configured_model:
+        models = [_secret("GEMINI_MODEL") or DEFAULT_GEMINI_MODEL]
+        if FALLBACK_GEMINI_MODEL not in models:
             models.append(FALLBACK_GEMINI_MODEL)
         for index, model in enumerate(models):
             received_text = False
@@ -202,7 +208,11 @@ def _stream_ai(question: str, context: str, history: list[dict]):
                         yield chunk.text
                 return
             except Exception as exc:
-                if index == 0 and not received_text and getattr(exc, "code", None) == 503:
+                if (
+                    index < len(models) - 1
+                    and not received_text
+                    and getattr(exc, "code", None) in (404, 503)
+                ):
                     continue
                 raise
         return
@@ -337,16 +347,28 @@ def render_report_chat(context: str, summary, recommendations, scope_label: str)
         return
     question = question[:MAX_QUESTION_CHARS]
 
+    ok = True
     with st.chat_message("user"):
         st.markdown(question)
     with st.chat_message("assistant"):
         if use_ai:
             try:
                 answer = st.write_stream(_stream_ai(question, context, history))
+                if not str(answer).strip():
+                    answer = ""
+                    ok = False
+                    st.warning(
+                        "Mô hình không trả về nội dung (có thể do bị chặn bởi bộ lọc an toàn "
+                        "hoặc hết giới hạn token). Hãy thử diễn đạt lại câu hỏi."
+                    )
             except Exception as exc:  # lỗi mạng/khóa API/giới hạn tốc độ
+                ok = False
                 answer = st.write_stream(_stream_error(exc))
+                st.caption(f"Chi tiết kỹ thuật: {type(exc).__name__}: {str(exc)[:300]}")
         else:
             answer = _offline_answer(question, summary, recommendations)
             st.markdown(answer)
-    history.append({"role": "user", "content": question})
-    history.append({"role": "assistant", "content": answer})
+    # Chỉ lưu lượt hỏi đáp thành công, tránh làm hỏng các lần hỏi sau.
+    if ok and str(answer).strip():
+        history.append({"role": "user", "content": question})
+        history.append({"role": "assistant", "content": answer})
