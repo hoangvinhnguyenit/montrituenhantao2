@@ -67,6 +67,45 @@ class ChatbotProviderTests(unittest.TestCase):
         )
         self.assertIn("số liệu báo cáo", captured["config"]["system_instruction"])
 
+    def test_gemini_503_falls_back_to_stable_model_before_output(self):
+        requested_models = []
+
+        class FakeModels:
+            def generate_content_stream(self, **kwargs):
+                requested_models.append(kwargs["model"])
+                if len(requested_models) == 1:
+                    error = RuntimeError("temporarily unavailable")
+                    error.code = 503
+                    raise error
+                return [types.SimpleNamespace(text="Đã trả lời")]
+
+        fake_genai = types.ModuleType("google.genai")
+        fake_genai.Client = lambda api_key: types.SimpleNamespace(models=FakeModels())
+        fake_genai.types = types.SimpleNamespace(
+            GenerateContentConfig=lambda **kwargs: kwargs
+        )
+        fake_google = types.ModuleType("google")
+        fake_google.genai = fake_genai
+
+        with (
+            patch.dict(
+                sys.modules,
+                {"google": fake_google, "google.genai": fake_genai},
+            ),
+            patch.object(
+                chatbot,
+                "_secret",
+                side_effect=lambda name: {"GEMINI_API_KEY": "google-test-key"}.get(name),
+            ),
+        ):
+            answer = list(chatbot._stream_ai("hỏi", "context", []))
+
+        self.assertEqual(answer, ["Đã trả lời"])
+        self.assertEqual(
+            requested_models,
+            [chatbot.DEFAULT_GEMINI_MODEL, chatbot.FALLBACK_GEMINI_MODEL],
+        )
+
     def test_gemini_server_error_suggests_retry_without_showing_key(self):
         class ServerError(Exception):
             code = 503

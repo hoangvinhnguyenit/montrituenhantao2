@@ -19,6 +19,7 @@ import streamlit as st
 from streamlit.errors import StreamlitSecretNotFoundError
 
 DEFAULT_GEMINI_MODEL = "gemini-3.8-flash"
+FALLBACK_GEMINI_MODEL = "gemini-3.6-flash"
 DEFAULT_ANTHROPIC_MODEL = "claude-sonnet-5-5"
 MAX_CONTEXT_CHARS = 14_000
 MAX_HISTORY_TURNS = 8
@@ -180,17 +181,30 @@ def _stream_ai(question: str, context: str, history: list[dict]):
             for message in history[-MAX_HISTORY_TURNS * 2 :]
         ]
         contents.append({"role": "user", "parts": [{"text": question}]})
-        stream = client.models.generate_content_stream(
-            model=_secret("GEMINI_MODEL") or DEFAULT_GEMINI_MODEL,
-            contents=contents,
-            config=types.GenerateContentConfig(
-                system_instruction=system,
-                max_output_tokens=MAX_OUTPUT_TOKENS,
-            ),
-        )
-        for chunk in stream:
-            if chunk.text:
-                yield chunk.text
+        configured_model = _secret("GEMINI_MODEL")
+        models = [configured_model or DEFAULT_GEMINI_MODEL]
+        if not configured_model:
+            models.append(FALLBACK_GEMINI_MODEL)
+        for index, model in enumerate(models):
+            received_text = False
+            try:
+                stream = client.models.generate_content_stream(
+                    model=model,
+                    contents=contents,
+                    config=types.GenerateContentConfig(
+                        system_instruction=system,
+                        max_output_tokens=MAX_OUTPUT_TOKENS,
+                    ),
+                )
+                for chunk in stream:
+                    if chunk.text:
+                        received_text = True
+                        yield chunk.text
+                return
+            except Exception as exc:
+                if index == 0 and not received_text and getattr(exc, "code", None) == 503:
+                    continue
+                raise
         return
 
     import anthropic
