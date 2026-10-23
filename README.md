@@ -84,3 +84,19 @@ Bảng `train` là bắt buộc; ứng dụng cũng hỗ trợ tên cũ `train2`
 Ưu tiên khóa anon/publishable với chính sách RLS phù hợp. Nếu buộc phải dùng
 service-role key, chỉ lưu trong môi trường máy chủ tin cậy; tuyệt đối không đưa
 khóa đó vào trình duyệt hoặc repository.
+
+## Trợ lý AI trong báo cáo
+
+Cài dependencies bằng `pip install -r requirements.txt`. Để chạy chatbot cục bộ,
+tạo `.streamlit/secrets.toml` (tệp đã được bỏ qua bởi Git) với khóa ở cấp cao nhất:
+
+```toml
+ANTHROPIC_API_KEY = "sk-ant-..."
+# Tùy chọn: CHATBOT_MODEL = "claude-sonnet-5-5"
+```
+
+Trên Streamlit Community Cloud, thêm cùng các giá trị này trong **App settings →
+Secrets**. Không khai báo khóa như biến Python trong `app.py`, không gửi khóa lên
+GitHub; sau khi thay đổi Secrets, khởi động lại ứng dụng nếu Streamlit chưa tự
+tải lại. Nếu giao diện báo chưa đọc được khóa, kiểm tra đúng tên
+`ANTHROPIC_API_KEY`, dấu ngoặc kép TOML và rằng secret nằm trong app đang chạy.

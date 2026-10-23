@@ -4,7 +4,7 @@
 Cấu hình (biến môi trường hoặc st.secrets):
     ANTHROPIC_API_KEY  khóa API (bắt buộc để dùng AI; thiếu thì chạy chế độ tra cứu đơn giản)
     CHATBOT_MODEL      tên mô hình (mặc định claude-sonnet-5-5)
-Cài đặt: pip install anthropic
+Cài đặt: pip install -r requirements.txt
 """
 
 from __future__ import annotations
@@ -55,14 +55,22 @@ def _secret(name: str) -> str | None:
     return str(value) if value else None
 
 
-def ai_available() -> bool:
+def _ai_unavailable_reason() -> str | None:
     if not _secret("ANTHROPIC_API_KEY"):
-        return False
+        return (
+            "Chưa đọc được ANTHROPIC_API_KEY. Thêm khóa vào "
+            "`.streamlit/secrets.toml` (dạng `ANTHROPIC_API_KEY = \"sk-ant-...\"`) "
+            "hoặc cấu hình Secrets của Streamlit Cloud, rồi khởi động lại ứng dụng."
+        )
     try:
         import anthropic  # noqa: F401
     except ImportError:
-        return False
-    return True
+        return "Chưa cài gói `anthropic`. Chạy `pip install -r requirements.txt` rồi khởi động lại."
+    return None
+
+
+def ai_available() -> bool:
+    return _ai_unavailable_reason() is None
 
 
 # ------------------------------------------------------------------ ngữ cảnh
@@ -179,12 +187,14 @@ def render_report_chat(context: str, summary, recommendations, scope_label: str)
     """Vẽ khung chat. Gọi một lần ở cuối trang báo cáo."""
     st.divider()
     st.subheader("Trợ lý AI hỏi đáp báo cáo")
-    use_ai = ai_available()
+    unavailable_reason = _ai_unavailable_reason()
+    use_ai = unavailable_reason is None
     st.caption(
         f"Hỏi về số liệu của báo cáo đang xem ({scope_label}). Câu trả lời chỉ dựa trên dữ liệu "
         "trên trang này và mang tính tham khảo; hãy kiểm tra trước khi ra quyết định."
-        + ("" if use_ai else " Đang ở chế độ không AI (thiếu `ANTHROPIC_API_KEY` hoặc gói `anthropic`).")
     )
+    if unavailable_reason:
+        st.warning(f"Đang ở chế độ không AI. {unavailable_reason}")
 
     history = st.session_state.setdefault(HISTORY_KEY, [])
     pending = st.session_state.pop("report_chat_pending", None)
